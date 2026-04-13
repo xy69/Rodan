@@ -1,24 +1,71 @@
 # Rodan
 
-Rodan is a real-time rendering engine built on top of the Velos Render Hardware Interface (RHI).  
-It is designed as a modular, modern rendering framework for experimenting with real-time graphics techniques and engine architecture.
+Rodan is a modular real-time rendering engine built on the [Velos](https://github.com/LipskiDev/Velos) Render Hardware Interface (RHI), focusing on clean separation between GPU abstraction and high-level systems such as scene management, materials, and modern rendering techniques.
 
-## Overview
+---
 
-Rodan sits above the Velos RHI and provides higher-level rendering systems such as:
+## Building
 
-- Scene representation (meshes, cameras, lights)
-- Material and shader systems
-- GPU resource management
-- Render pipeline orchestration
-- Rendering techniques (forward, deferred, clustered, etc.)
+### Prerequisites
 
-The project emphasizes **clean separation of concerns**:
+| Dependency | Link | Notes |
+|---|---|---|
+| CMake | [cmake.org](https://cmake.org/download/) | Required for assimp |
+| Premake5 | [premake.github.io](https://premake.github.io/download) | Must be in PATH |
+| Vulkan SDK | [vulkan.lunarg.com](https://vulkan.lunarg.com/sdk/home) | Sets `VULKAN_SDK` automatically |
+| Visual Studio 2022 | [visualstudio.microsoft.com](https://visualstudio.microsoft.com/) | C++ desktop workload required |
 
-- **Velos** → low-level GPU abstraction (Vulkan backend)
-- **Rodan** → high-level rendering engine
+On Windows, you can install Premake5 and the Vulkan SDK via winget:
 
-This allows Rodan to evolve independently of the underlying graphics API.
+```powershell
+winget install Premake.Premake.5.Beta
+winget install KhronosGroup.VulkanSDK
+```
+
+> Restart your terminal after installing so `PATH` and `VULKAN_SDK` are picked up.
+
+### Clone
+
+```bash
+git clone --recursive https://github.com/LipskiDev/Rodan
+cd Rodan
+```
+
+### Generate Project Files
+
+**Windows**
+```bash
+premake5 vs2022
+```
+
+**Linux**
+```bash
+premake5 gmake
+```
+
+### Build
+
+**Visual Studio** — Open `Rodan.sln`, set **Runtime** as the startup project, select **Release | x64**, and build.
+
+**Command line (MSBuild)**
+```powershell
+msbuild Rodan.sln /p:Configuration=Release /p:Platform=x64 /m
+```
+
+**Command line (Make)**
+```bash
+make config=release_x86_64
+```
+
+> The Vulkan SDK only ships release-mode `shaderc_combined.lib`, so **Release** configuration is recommended on Windows. Debug builds may produce linker errors due to runtime library mismatches.
+
+### Run
+
+Launch from the Rodan root directory:
+
+```powershell
+./bin/Release-windows-x86_64/Runtime/Runtime
+```
 
 ---
 
@@ -26,59 +73,57 @@ This allows Rodan to evolve independently of the underlying graphics API.
 
 Rodan follows a layered architecture:
 
-[Runtime / App]
+```
+┌─────────────────────┐
+│   Runtime / App     │
+├─────────────────────┤
+│ Renderer / Scene /  │
+│ Assets / Materials  │
+├─────────────────────┤
+│ Graphics Abstraction│
+├─────────────────────┤
+│    Velos (RHI)      │
+├─────────────────────┤
+│      Vulkan         │
+└─────────────────────┘
+```
 
-↓
+- **Velos** — low-level GPU abstraction (Vulkan backend)
+- **Rodan** — high-level rendering engine
 
-[Renderer / Scene / Assets]
+Rodan builds on top of Velos primitives and does not expose backend-specific APIs to higher-level systems.
 
-↓
+### Velos (RHI)
 
-[Graphics Abstraction]
+Included as a submodule under `external/velos/`. Provides:
 
-↓
-
-[Velos (RHI)]
-
-↓
-
-[Vulkan]
-
-
-## Relationship to Velos
-
-Rodan depends on Velos as a submodule:
-external/velos/
-
-Velos provides:
 - Device and swapchain management
 - Command lists and submission
 - Buffers, images, pipelines
 - Synchronization primitives
 
-Rodan builds on top of these primitives and does **not** expose backend-specific APIs (e.g., Vulkan) to higher-level systems.
-
 ---
 
-## Goals
+## Features
 
-- Build a clean and extensible rendering architecture
-- Explore modern real-time rendering techniques
-- Maintain strict separation between API abstraction and rendering logic
-- Serve as a foundation for experimentation (graphics research, engine design)
+Rodan provides higher-level rendering systems including:
 
----
+- Scene representation (meshes, cameras, lights)
+- Material and shader systems
+- GPU resource management
+- Render pipeline orchestration
+- Rendering techniques (forward, deferred, clustered, etc.)
 
-## Current Status
+### Current Status
 
 Early development.
 
-Implemented / in progress:
+**Implemented / in progress:**
 - Engine structure and module layout
 - Integration with Velos RHI
 - Basic rendering pipeline bootstrap
 
-Planned:
+**Planned:**
 - Mesh and material system
 - Texture support
 - Depth testing and render targets
@@ -89,17 +134,9 @@ Planned:
 
 ---
 
-## Building
+## Goals
 
-Rodan uses Premake for project generation.
-
-### Setup
-
-```bash
-git clone https://github.com/LipskiDev/Rodan
-cd rodan
-git submodule update --init --recursive
-
-premake5 gmake
-make
-```
+- Build a clean and extensible rendering architecture
+- Explore modern real-time rendering techniques
+- Maintain strict separation between API abstraction and rendering logic
+- Serve as a foundation for experimentation (graphics research, engine design)
